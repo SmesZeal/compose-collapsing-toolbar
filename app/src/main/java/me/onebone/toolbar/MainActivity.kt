@@ -92,7 +92,8 @@ internal fun MainScreen() {
 				painter = painterResource(id = R.drawable.abc_vector_test),
 				contentDescription = null
 			)
-		}
+		},
+		onRefresh = { }
 	) {
 		LazyColumn(
 			modifier = Modifier
@@ -121,7 +122,8 @@ internal fun MainScreen() {
 		scrollStrategy = ScrollStrategy.ExitUntilCollapsed,
 		toolbar = {
 			// toolbar contents...
-		}
+		},
+		onRefresh = {}
 	) {
 		// body contents...
 	}

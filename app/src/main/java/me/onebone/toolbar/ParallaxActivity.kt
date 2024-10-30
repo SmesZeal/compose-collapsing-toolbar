@@ -104,7 +104,8 @@ fun ParallaxEffect() {
 					contentScale = ContentScale.Crop,
 					contentDescription = null
 				)
-			}
+			},
+			onRefresh = {}
 		) {
 			LazyColumn(
 				modifier = Modifier

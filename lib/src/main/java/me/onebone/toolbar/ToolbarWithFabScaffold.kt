@@ -36,7 +36,9 @@ fun ToolbarWithFabScaffold(
 				scrollStrategy = scrollStrategy,
 				toolbarModifier = toolbarModifier,
 				toolbarClipToBounds = toolbarClipToBounds,
+				isRefreshing = false,
 				toolbar = toolbar,
+				onRefresh = {},
 				body = body
 			)
 		}.map { it.measure(toolbarScaffoldConstraints) }

@@ -72,7 +72,8 @@ class CollapsingToolbarTest {
 					Box(modifier = Modifier
 						.fillMaxWidth()
 						.height(50.dp))
-				}
+				},
+				onRefresh = {}
 			) {
 				LazyColumn(modifier = Modifier
 					.fillMaxSize()

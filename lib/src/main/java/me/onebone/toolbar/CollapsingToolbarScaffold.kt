@@ -23,7 +23,13 @@
 package me.onebone.toolbar
 
 import androidx.compose.foundation.gestures.ScrollableDefaults
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,6 +38,7 @@ import androidx.compose.runtime.saveable.SaverScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.ParentDataModifier
@@ -62,7 +69,7 @@ private class CollapsingToolbarScaffoldStateSaver: Saver<CollapsingToolbarScaffo
 		listOf(
 			value.toolbarState.height,
 			value.offsetY
-	)
+		)
 }
 
 @Composable
@@ -79,6 +86,7 @@ interface CollapsingToolbarScaffoldScope {
 	fun Modifier.align(alignment: Alignment): Modifier
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CollapsingToolbarScaffold(
 	modifier: Modifier,
@@ -87,6 +95,9 @@ fun CollapsingToolbarScaffold(
 	enabled: Boolean = true,
 	toolbarModifier: Modifier = Modifier,
 	toolbarClipToBounds: Boolean = true,
+	isRefreshing: Boolean = false,
+	allowPullRefresh: Boolean = false,
+	onRefresh: () -> Unit,
 	toolbar: @Composable CollapsingToolbarScope.() -> Unit,
 	body: @Composable CollapsingToolbarScaffoldScope.() -> Unit
 ) {
@@ -99,9 +110,23 @@ fun CollapsingToolbarScaffold(
 
 	val toolbarState = state.toolbarState
 
-	Layout(
+	// Estado de PullRefresh
+	val pullRefreshState = rememberPullRefreshState(
+		refreshing = isRefreshing,
+		onRefresh = onRefresh
+	)
+	val isToolbarExpanded = state.toolbarState.height == state.toolbarState.maxHeight
+
+	var pullIndicatorVisible = remember { mutableStateOf(false) }
+
+	LaunchedEffect(pullRefreshState.progress, isToolbarExpanded) {
+		pullIndicatorVisible.value = pullRefreshState.progress > 0f && isToolbarExpanded
+	}
+
+	Layout(    // Container, including bottom space
 		content = {
 			CollapsingToolbar(
+				// Collapsing header
 				modifier = toolbarModifier,
 				clipToBounds = toolbarClipToBounds,
 				collapsingToolbarState = toolbarState,
@@ -109,7 +134,25 @@ fun CollapsingToolbarScaffold(
 				toolbar()
 			}
 
-			CollapsingToolbarScaffoldScopeInstance.body()
+			// Body with PullRefreshIndicator
+			Box(
+				modifier = if (allowPullRefresh && isToolbarExpanded) {
+					Modifier.pullRefresh(pullRefreshState)
+				} else {
+					Modifier
+				}
+			) {
+				CollapsingToolbarScaffoldScopeInstance.body()
+
+				if (allowPullRefresh && pullIndicatorVisible.value) {
+					PullRefreshIndicator(
+						refreshing = isRefreshing,
+						state = pullRefreshState,
+						contentColor = Color(0xFF008137), // TODO as parameter
+						modifier = Modifier.align(Alignment.TopCenter)
+					)
+				}
+			}
 		},
 		modifier = modifier
 			.then(
@@ -179,6 +222,7 @@ fun CollapsingToolbarScaffold(
 			toolbarPlaceable.placeRelative(0, state.offsetY)
 		}
 	}
+
 }
 
 internal object CollapsingToolbarScaffoldScopeInstance: CollapsingToolbarScaffoldScope {
