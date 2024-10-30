@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import me.onebone.toolbar.ui.theme.CollapsingToolbarTheme
 
+
 class MainActivity: ComponentActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -89,7 +90,7 @@ internal fun MainScreen() {
 				modifier = Modifier
 					.pin()
 					.padding(16.dp),
-				painter = painterResource(id = R.drawable.abc_vector_test),
+				painter = painterResource(R.drawable.android2),
 				contentDescription = null
 			)
 		},
