@@ -28,6 +28,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.unit.Velocity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 enum class ScrollStrategy {
 	EnterAlways {
@@ -53,7 +56,16 @@ enum class ScrollStrategy {
 			flingBehavior: FlingBehavior
 		): NestedScrollConnection =
 			ExitUntilCollapsedNestedScrollConnection(toolbarState, flingBehavior)
+	},
+	Fixed {
+		override fun create(
+			offsetY: MutableState<Int>,
+			toolbarState: CollapsingToolbarState,
+			flingBehavior: FlingBehavior
+		): NestedScrollConnection =
+			FixedScrollConnection(offsetY, toolbarState, flingBehavior) // Conexión donde el desplazamiento se maneja de forma fija
 	};
+
 
 	internal abstract fun create(
 		offsetY: MutableState<Int>,
@@ -236,4 +248,69 @@ internal class ExitUntilCollapsedNestedScrollConnection(
 
 		return Velocity(x = 0f, y = available.y - left)
 	}
+}
+
+class FixedNestedScrollConnection : NestedScrollConnection {
+	override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+		return Offset.Zero
+	}
+
+	override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+
+		return Offset.Zero
+	}
+}
+
+
+internal class FixedScrollConnection(
+	private val offsetY: MutableState<Int>,
+	private val toolbarState: CollapsingToolbarState,
+	private val flingBehavior: FlingBehavior
+): NestedScrollConnection {
+	private val scrollDelegate = ScrollDelegate(offsetY)
+	//private val tracker = RelativeVelocityTracker(CurrentTimeProviderImpl())
+
+
+	@OptIn(ExperimentalToolbarApi::class)
+	override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+		val dy = available.y
+
+		val consume = if (dy < 0) { // Desplazamiento hacia arriba, solo consumir el scroll sin cambiar el tamaño del toolbar
+			0f
+		} else {
+			0f
+		}
+
+		return Offset(0f, consume) // Consume el desplazamiento sin modificar el tamaño del toolbar
+	}
+
+	override fun onPostScroll(
+		consumed: Offset,
+		available: Offset,
+		source: NestedScrollSource
+	): Offset {
+		val dy = available.y
+
+		// No modificar el tamaño del toolbar, solo permitir el desplazamiento
+		val consume = if (dy > 0) { // Desplazamiento hacia abajo, solo consumir el scroll sin cambiar el tamaño del toolbar
+			0f
+		} else {
+			0f
+		}
+
+		return Offset(0f, consume) // Consume el desplazamiento sin modificar el tamaño del toolbar
+	}
+
+	/*
+	override suspend fun onPreFling(available: Velocity): Velocity {
+		// No modificar el tamaño del toolbar en el fling
+		return Velocity(x = 0f, y = available.y) // Solo permitir el fling sin cambiar el tamaño del toolbar
+	}
+
+	override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+		// No modificar el tamaño del toolbar en el fling
+		return Ve
+
+	 */
+
 }
