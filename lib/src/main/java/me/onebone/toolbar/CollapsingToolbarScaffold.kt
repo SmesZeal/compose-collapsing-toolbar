@@ -22,6 +22,7 @@
 
 package me.onebone.toolbar
 
+import AutoScroll
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.ExperimentalMaterialApi
@@ -86,6 +87,7 @@ interface CollapsingToolbarScaffoldScope {
 	fun Modifier.align(alignment: Alignment): Modifier
 }
 
+
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CollapsingToolbarScaffold(
@@ -101,6 +103,8 @@ fun CollapsingToolbarScaffold(
 	toolbar: @Composable CollapsingToolbarScope.() -> Unit,
 	body: @Composable CollapsingToolbarScaffoldScope.() -> Unit
 ) {
+	AutoScroll(state = state)
+
 	val flingBehavior = ScrollableDefaults.flingBehavior()
 	val layoutDirection = LocalLayoutDirection.current
 
